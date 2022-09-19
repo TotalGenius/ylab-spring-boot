@@ -4,6 +4,7 @@ import com.edu.ulab.app.dto.web.constant.WebConstant;
 import com.edu.ulab.app.dto.web.request.UserBookRequest;
 import com.edu.ulab.app.dto.web.response.UserBookDeleteResponse;
 import com.edu.ulab.app.dto.web.response.UserBookGetResponse;
+import com.edu.ulab.app.dto.web.response.UserUpdateResponse;
 import com.edu.ulab.app.facade.UserDataFacade;
 import com.edu.ulab.app.dto.web.response.UserBookResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -41,8 +42,13 @@ public class UserController {
     }
 
     @PutMapping(value = "/update")
-    public UserBookResponse updateUserWithBooks(@RequestBody UserBookRequest request) {
-        UserBookResponse response = userDataFacade.updateUserWithBooks(request);
+    @Operation(summary = "Update user and books row.",
+            responses = {
+                    @ApiResponse(description = "User book",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = UserUpdateResponse.class)))})
+    public UserUpdateResponse updateUserWithBooks(@RequestBody UserBookRequest request) {
+        UserUpdateResponse response = userDataFacade.updateUserWithBooks(request);
         log.info("Response with updated user and his books: {}", response);
         return response;
     }

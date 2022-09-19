@@ -4,6 +4,7 @@ import com.edu.ulab.app.dto.BookDto;
 import com.edu.ulab.app.dto.UserDto;
 import com.edu.ulab.app.dto.web.request.BookRequest;
 import com.edu.ulab.app.dto.web.response.UserBookDeleteResponse;
+import com.edu.ulab.app.dto.web.response.UserUpdateResponse;
 import com.edu.ulab.app.entity.User;
 import com.edu.ulab.app.mapper.BookMapper;
 import com.edu.ulab.app.mapper.UserMapper;
@@ -65,8 +66,34 @@ public class UserDataFacade {
                 .build();
     }
 
-    public UserBookResponse updateUserWithBooks(UserBookRequest userBookRequest) {
-        return null;
+    public UserUpdateResponse updateUserWithBooks(UserBookRequest userBookRequest) {
+
+        UserDto userDto = userMapper.userRequestToUserDto(userBookRequest.getUserRequest());
+        //получили дто юзера
+        System.out.println(userDto);
+
+        if (userDto.getId() == 0 || userDto.getId() == null) {
+            return UserUpdateResponse.builder().userModel(new UserDto(0L, "", "", 0)).bookModels(Collections.emptyList()).build();
+        } else {
+            List<BookRequest> bookRequests = userBookRequest.getBookRequests();
+            System.out.println(bookRequests);
+            List<BookDto> bookDtos=null;//Убрать!
+            if (bookRequests != null) {
+                bookDtos=  bookRequests.stream()
+                        .filter(Objects::nonNull)
+                        .map(bookMapper::bookRequestToBookDto)
+                        .peek(bookDto -> bookDto.setUserId(userDto.getId()))
+                        .peek(x-> System.out.println(x))
+                        .peek(bookService::updateBook)
+                        .toList();
+            }
+            //bookService.getBooksByUserId(userDto.getId());
+            UserDto oldUser = userService.updateUser(userDto);
+            return UserUpdateResponse.builder()
+                    .userModel(oldUser)
+                    .bookModels(bookDtos)
+                    .build();
+        }
     }
 
     public UserBookGetResponse getUserWithBooks(Long userId) {

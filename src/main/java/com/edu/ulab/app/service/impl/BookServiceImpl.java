@@ -19,13 +19,15 @@ public class BookServiceImpl implements BookService {
     public BookDto createBook(BookDto bookDto) {
         Book book = new Book(0L, bookDto.getUserId(), bookDto.getTitle(), bookDto.getAuthor(), bookDto.getPageCount());
         book = bookDAO.create(book);
-        bookDto.setId(book.getBookId());
+        bookDto.setId(book.getId());
         return bookDto;
     }
 
     @Override
     public BookDto updateBook(BookDto bookDto) {
-        return null;
+
+        Book book = bookDAO.update(new Book(bookDto.getId(),bookDto.getUserId(),bookDto.getTitle(),bookDto.getAuthor(),bookDto.getPageCount()));
+        return new BookDto(book.getId(),bookDto.getUserId(),bookDto.getTitle(),bookDto.getAuthor(),bookDto.getPageCount());
     }
 
     @Override
@@ -33,7 +35,7 @@ public class BookServiceImpl implements BookService {
         List<Book> books = bookDAO.getBooksByUserId(userId);
         List<BookDto> booksDto = books
                 .stream()
-                .map(x -> new BookDto(x.getBookId(), x.getUserId(), x.getTitle(), x.getAuthor(), x.getPageCount()))
+                .map(x -> new BookDto(x.getId(), x.getUserId(), x.getTitle(), x.getAuthor(), x.getPageCount()))
                 .toList();
         return booksDto;
     }
@@ -41,7 +43,7 @@ public class BookServiceImpl implements BookService {
     @Override
     public List<BookDto> deleteBookById(Long id) {
         return bookDAO.deleteByUserId(id).stream()
-                .map(x -> new BookDto(x.getBookId(), x.getUserId(), x.getTitle(), x.getAuthor(), x.getPageCount()))
+                .map(x -> new BookDto(x.getId(), x.getUserId(), x.getTitle(), x.getAuthor(), x.getPageCount()))
                 .toList();
     }
 }

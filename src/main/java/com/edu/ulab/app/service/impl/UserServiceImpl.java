@@ -2,7 +2,6 @@ package com.edu.ulab.app.service.impl;
 
 import com.edu.ulab.app.dao.UserDAO;
 import com.edu.ulab.app.dao.impl.UserDAOImpl;
-import com.edu.ulab.app.dto.BookDto;
 import com.edu.ulab.app.dto.UserDto;
 import com.edu.ulab.app.entity.User;
 import com.edu.ulab.app.service.UserService;
@@ -19,34 +18,30 @@ public class UserServiceImpl implements UserService {
     public UserDto createUser(UserDto userDto) {
         User user = new User(0L, userDto.getFullName(), userDto.getTitle(), userDto.getAge());
         user =  userDAO.createUser(user);
-        userDto.setId(user.getUserId());
+        userDto.setId(user.getId());
         return userDto;
     }
 
     @Override
     public UserDto updateUser(UserDto userDto) {
-        return null;
+
+        User oldUser = userDAO.updateUser(new User(userDto.getId(), userDto.getFullName(), userDto.getTitle(), userDto.getAge()));
+        return new UserDto(oldUser.getId(), oldUser.getName(), oldUser.getTitle(), oldUser.getAge());
     }
 
     @Override
     public UserDto getUserById(Long id) {
         User user = userDAO.getUserById(id);
-        UserDto userDto = new UserDto(user.getUserId(), user.getName(), user.getTitle(), user.getAge());
+        UserDto userDto = new UserDto(user.getId(), user.getName(), user.getTitle(), user.getAge());
         return userDto;
     }
 
     @Override
     public UserDto deleteUserById(Long id) {
        User user= userDAO.deleteUser(id);
-       UserDto deletedUser  =new UserDto(user.getUserId(), user.getName(), user.getTitle(), user.getAge());
+       UserDto deletedUser  =new UserDto(user.getId(), user.getName(), user.getTitle(), user.getAge());
        return deletedUser;
     }
 
-    @Override
-    public List<UserDto> getAll() {
-        List<UserDto> userDtos = userDAO.getAll().stream()
-                .map(x-> new UserDto(x.getUserId(),x.getName(),x.getTitle(),x.getAge()))
-                .toList();
-        return userDtos;
-    }
+
 }

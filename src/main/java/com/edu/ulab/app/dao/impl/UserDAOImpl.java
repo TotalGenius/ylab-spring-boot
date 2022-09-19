@@ -37,10 +37,11 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
-    public List<User> getAll() {
-        Optional<List<User>> optionalUsers = storage.getUserTable().getAll();
-        List<User> userList = optionalUsers.orElse(Collections.emptyList());
-        return userList;
+    public User updateUser(User user) {
+        Optional<User> optionalUser = storage.getUserTable().update(user);
+        User updatedUser = optionalUser.orElse(new User(0L,"","", 0));
+        return updatedUser;
     }
+
 
 }

@@ -37,12 +37,18 @@ public class BookDAOImpl implements BookDAO {
                 .orElse(Collections.emptyList())
                 .stream()
                 .filter(x -> x.getUserId() == userId)
-                .map(x -> x.getBookId())
+                .map(x -> x.getId())
                 .toList());
         List<Book> deletedBooks = ids.orElse(Collections.emptyList())
                 .stream()
                 .map(x -> storage.getBookTable().delete(x).get())
                 .toList();
         return deletedBooks;
+    }
+
+    @Override
+    public Book update(Book book) {
+        Optional<Book> optionalBook= storage.getBookTable().update(book);
+        return optionalBook.orElse(new Book(0l,0L,"","",0));
     }
 }

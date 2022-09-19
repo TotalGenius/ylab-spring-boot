@@ -71,8 +71,8 @@ public class Storage {
 
         @Override
         public User create(User element) {
-            element.setUserId(setUserId());
-            users.put(element.getUserId(), element);
+            element.setId(setUserId());
+            users.put(element.getId(), element);
             return element;
         }
 
@@ -83,8 +83,15 @@ public class Storage {
 
         @Override
         public Optional<User> update(User element) {
-
-            return null;
+            User user;
+            if (users.containsKey(element.getId())) {
+                User tempUser = users.get(element.getId());
+                user = new User(tempUser.getId(), tempUser.getName(), tempUser.getTitle(), tempUser.getAge());
+                if (element.getName() != null) tempUser.setName(element.getName());
+                if (element.getTitle() != null) tempUser.setTitle(element.getTitle());
+                if (element.getAge() != 0) tempUser.setAge(element.getAge());
+            } else user = new User(0L, "", "", 0);
+            return Optional.ofNullable(user);
         }
     }
     ////////////////////////////////
@@ -113,8 +120,8 @@ public class Storage {
 
         @Override
         public Book create(Book element) {
-            element.setBookId(setBookId());
-            books.put(element.getBookId(), element);
+            element.setId(setBookId());
+            books.put(element.getId(), element);
             return element;
         }
 
@@ -125,7 +132,17 @@ public class Storage {
 
         @Override
         public Optional<Book> update(Book element) {
-            return null;
+
+            Optional<Book> bookOptional = Optional.empty();
+
+            if (books.containsKey(element.getUserId())&&books.values().stream().noneMatch(x -> x.getTitle().compareToIgnoreCase(element.getTitle()) == 0
+                    && x.getAuthor().compareToIgnoreCase(element.getAuthor()) == 0)) {
+                element.setId(setBookId());
+                books.put(element.getId(),element);
+                Book temp = books.get(element.getId());
+                bookOptional= Optional.ofNullable(new Book(temp.getId(), temp.getUserId(), temp.getTitle(),temp.getAuthor(),temp.getPageCount()));
+            }
+            return bookOptional;
         }
     }
 }

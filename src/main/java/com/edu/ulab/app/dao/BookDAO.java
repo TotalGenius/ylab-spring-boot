@@ -10,4 +10,6 @@ public interface BookDAO {
     public List<Book> getBooksByUserId(Long userId);
 
     public List<Book> deleteByUserId(Long userId);
+
+    public Book update(Book book);
 }
