@@ -1,4 +1,4 @@
-package com.edu.ulab.app.web.response;
+package com.edu.ulab.app.dto.web.response;
 
 import lombok.Data;
 

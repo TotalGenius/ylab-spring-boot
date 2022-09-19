@@ -2,18 +2,23 @@ package com.edu.ulab.app.facade;
 
 import com.edu.ulab.app.dto.BookDto;
 import com.edu.ulab.app.dto.UserDto;
-import com.edu.ulab.app.exception.NotFoundException;
+import com.edu.ulab.app.dto.web.request.BookRequest;
+import com.edu.ulab.app.dto.web.response.UserBookDeleteResponse;
+import com.edu.ulab.app.entity.User;
 import com.edu.ulab.app.mapper.BookMapper;
 import com.edu.ulab.app.mapper.UserMapper;
 import com.edu.ulab.app.service.BookService;
 import com.edu.ulab.app.service.UserService;
-import com.edu.ulab.app.web.request.UserBookRequest;
-import com.edu.ulab.app.web.response.UserBookResponse;
+import com.edu.ulab.app.dto.web.request.UserBookRequest;
+import com.edu.ulab.app.dto.web.response.UserBookGetResponse;
+import com.edu.ulab.app.dto.web.response.UserBookResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 @Component
@@ -41,7 +46,8 @@ public class UserDataFacade {
         UserDto createdUser = userService.createUser(userDto);
         log.info("Created user: {}", createdUser);
 
-        List<Long> bookIdList = userBookRequest.getBookRequests()
+        Optional<List<BookRequest>> booksId = Optional.ofNullable(userBookRequest.getBookRequests());
+        List<Long> bookIdList = booksId.orElse(Collections.emptyList())
                 .stream()
                 .filter(Objects::nonNull)
                 .map(bookMapper::bookRequestToBookDto)
@@ -63,10 +69,27 @@ public class UserDataFacade {
         return null;
     }
 
-    public UserBookResponse getUserWithBooks(Long userId) {
-        return null;
+    public UserBookGetResponse getUserWithBooks(Long userId) {
+        log.info("Got user id: {}", userId);
+        UserDto userDto = userService.getUserById(userId);
+        log.info("Mapped user dto from DB by id: {}", userDto);
+        List<BookDto> bookDtos = bookService.getBooksByUserId(userId);
+        log.info("Collected book DTOS from DB: {}", bookDtos);
+        return UserBookGetResponse.builder()
+                .userModel(userDto)
+                .bookModels(bookDtos)
+                .build();
     }
 
-    public void deleteUserWithBooks(Long userId) {
+    public UserBookDeleteResponse deleteUserWithBooks(Long userId) {
+        log.info("Got user id that need to be deleted with books: {}", userId);
+        UserDto deletedUser = userService.deleteUserById(userId);
+        log.info("Got user dto of deleted user: {}", deletedUser);
+        List<BookDto> deletedBooks = bookService.deleteBookById(userId);
+        log.info("Got deleted books of deleted user: {}", deletedBooks);
+        return UserBookDeleteResponse.builder()
+                .userModel(deletedUser)
+                .bookModels(deletedBooks)
+                .build();
     }
 }

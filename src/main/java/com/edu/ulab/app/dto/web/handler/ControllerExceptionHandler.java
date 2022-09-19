@@ -1,7 +1,7 @@
-package com.edu.ulab.app.web.handler;
+package com.edu.ulab.app.dto.web.handler;
 
 import com.edu.ulab.app.exception.NotFoundException;
-import com.edu.ulab.app.web.response.BaseWebResponse;
+import com.edu.ulab.app.dto.web.response.BaseWebResponse;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

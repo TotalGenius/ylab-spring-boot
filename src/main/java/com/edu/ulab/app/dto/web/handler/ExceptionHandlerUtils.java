@@ -1,4 +1,4 @@
-package com.edu.ulab.app.web.handler;
+package com.edu.ulab.app.dto.web.handler;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 

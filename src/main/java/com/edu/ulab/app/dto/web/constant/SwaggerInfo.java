@@ -1,4 +1,4 @@
-package com.edu.ulab.app.web.constant;
+package com.edu.ulab.app.dto.web.constant;
 
 import lombok.experimental.UtilityClass;
 
