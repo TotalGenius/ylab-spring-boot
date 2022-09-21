@@ -1,7 +1,9 @@
 package com.edu.ulab.app.exception;
 
-public class NotFoundBookWithSuchIdException extends RuntimeException{
-    public NotFoundBookWithSuchIdException(Long incorrectId){
-        super("Incorrect Id:"+incorrectId);
+import com.edu.ulab.app.entity.Book;
+
+public class BookAlreadyExistsException extends RuntimeException{
+    public BookAlreadyExistsException(Book book){
+        super("This book already exists:"+"title-"+book.getTitle()+", author-"+book.getAuthor());
     }
 }

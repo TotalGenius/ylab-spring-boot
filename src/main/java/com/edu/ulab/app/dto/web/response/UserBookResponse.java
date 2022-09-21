@@ -8,7 +8,7 @@ import java.util.List;
 @Data
 @Builder
 public class UserBookResponse {
-    private Long userId;
-    private List<Long> booksIdList;
+    private UserResponse userResponse;
+    private List<BookResponse> bookResponses;
 
 }

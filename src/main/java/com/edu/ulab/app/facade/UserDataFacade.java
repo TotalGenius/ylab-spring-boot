@@ -1,18 +1,17 @@
 package com.edu.ulab.app.facade;
 
-import com.edu.ulab.app.dto.BookDto;
+
 import com.edu.ulab.app.dto.UserDto;
 import com.edu.ulab.app.dto.web.request.BookRequest;
-import com.edu.ulab.app.dto.web.response.UserBookDeleteResponse;
-import com.edu.ulab.app.dto.web.response.UserUpdateResponse;
-import com.edu.ulab.app.entity.User;
+import com.edu.ulab.app.dto.web.response.*;
+
+import com.edu.ulab.app.exception.IncorrectUserIdException;
+import com.edu.ulab.app.exception.NotFoundUserInRequestException;
 import com.edu.ulab.app.mapper.BookMapper;
 import com.edu.ulab.app.mapper.UserMapper;
-import com.edu.ulab.app.service.BookService;
-import com.edu.ulab.app.service.UserService;
+import com.edu.ulab.app.facade.service.BookService;
+import com.edu.ulab.app.facade.service.UserService;
 import com.edu.ulab.app.dto.web.request.UserBookRequest;
-import com.edu.ulab.app.dto.web.response.UserBookGetResponse;
-import com.edu.ulab.app.dto.web.response.UserBookResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +19,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
 
 @Slf4j
 @Component
@@ -41,14 +41,15 @@ public class UserDataFacade {
 
     public UserBookResponse createUserWithBooks(UserBookRequest userBookRequest) {
         log.info("Got user book create request: {}", userBookRequest);
-        UserDto userDto = userMapper.userRequestToUserDto(userBookRequest.getUserRequest());
+        UserDto userDto = Optional.ofNullable(userMapper.userRequestToUserDto(userBookRequest.getUserRequest())).orElseThrow(()-> new NotFoundUserInRequestException());
         log.info("Mapped user request: {}", userDto);
 
         UserDto createdUser = userService.createUser(userDto);
         log.info("Created user: {}", createdUser);
 
         Optional<List<BookRequest>> booksId = Optional.ofNullable(userBookRequest.getBookRequests());
-        List<Long> bookIdList = booksId.orElse(Collections.emptyList())
+
+        List<BookResponse> bookResponses = booksId.orElse(Collections.emptyList())
                 .stream()
                 .filter(Objects::nonNull)
                 .map(bookMapper::bookRequestToBookDto)
@@ -56,67 +57,76 @@ public class UserDataFacade {
                 .peek(mappedBookDto -> log.info("mapped book: {}", mappedBookDto))
                 .map(bookService::createBook)
                 .peek(createdBook -> log.info("Created book: {}", createdBook))
-                .map(BookDto::getId)
+                .map(bookMapper::bookDtoToBookRequest)
                 .toList();
-        log.info("Collected book ids: {}", bookIdList);
+        log.info("Collected book responses: {}", bookResponses);
 
         return UserBookResponse.builder()
-                .userId(createdUser.getId())
-                .booksIdList(bookIdList)
+                .userResponse(userMapper.userDtoToUserRequest(createdUser))
+                .bookResponses(bookResponses)
                 .build();
     }
 
-    public UserUpdateResponse updateUserWithBooks(UserBookRequest userBookRequest) {
+    public UserBookResponse updateUserWithBooks(UserBookRequest userBookRequest) {
 
-        UserDto userDto = userMapper.userRequestToUserDto(userBookRequest.getUserRequest());
-        //получили дто юзера
-        System.out.println(userDto);
+        UserDto userDto = Optional.ofNullable(userMapper.userRequestToUserDto(userBookRequest.getUserRequest())).orElseThrow(()-> new NotFoundUserInRequestException());
+        log.info("Got user dto from request: {}", userDto);
+        Long id = Optional.ofNullable(userDto.getId()).orElseThrow(()->new IncorrectUserIdException(userDto.getId()));
+        if (id == 0) {
+            log.error("Incorrect user Id:", userDto.getId());
+            throw new IncorrectUserIdException(userDto.getId());
 
-        if (userDto.getId() == 0 || userDto.getId() == null) {
-            return UserUpdateResponse.builder().userModel(new UserDto(0L, "", "", 0)).bookModels(Collections.emptyList()).build();
         } else {
-            List<BookRequest> bookRequests = userBookRequest.getBookRequests();
-            System.out.println(bookRequests);
-            List<BookDto> bookDtos=null;//Убрать!
-            if (bookRequests != null) {
-                bookDtos=  bookRequests.stream()
-                        .filter(Objects::nonNull)
-                        .map(bookMapper::bookRequestToBookDto)
-                        .peek(bookDto -> bookDto.setUserId(userDto.getId()))
-                        .peek(x-> System.out.println(x))
-                        .peek(bookService::updateBook)
-                        .toList();
-            }
-            //bookService.getBooksByUserId(userDto.getId());
-            UserDto oldUser = userService.updateUser(userDto);
-            return UserUpdateResponse.builder()
-                    .userModel(oldUser)
-                    .bookModels(bookDtos)
+            Optional<List<BookRequest>> bookRequests = Optional.ofNullable(userBookRequest.getBookRequests());
+            log.info("Collected book requests: {}", bookRequests);
+            List<BookResponse> bookResponses = bookRequests.orElse(Collections.emptyList()).stream()
+                    .filter(Objects::nonNull)
+                    .map(bookMapper::bookRequestToBookDto)
+                    .peek(bookDto -> bookDto.setUserId(userDto.getId()))
+                    .peek(bookService::updateBook)
+                    .map(bookDto -> bookMapper.bookDtoToBookRequest(bookDto))
+                    .toList();
+            log.info("Collected book responses: {}", bookResponses);
+            UserDto updatedUser = userService.updateUser(userDto);
+            log.info("Collected user DTO: {}", updatedUser);
+            return UserBookResponse.builder()
+                    .userResponse(userMapper.userDtoToUserRequest(updatedUser))
+                    .bookResponses(bookResponses)
                     .build();
         }
     }
 
-    public UserBookGetResponse getUserWithBooks(Long userId) {
+    public UserBookResponse getUserWithBooks(Long userId) {
+        log.error("Incorrect user id {}", userId);
+        if (userId == 0) throw new IncorrectUserIdException(userId);
         log.info("Got user id: {}", userId);
         UserDto userDto = userService.getUserById(userId);
         log.info("Mapped user dto from DB by id: {}", userDto);
-        List<BookDto> bookDtos = bookService.getBooksByUserId(userId);
-        log.info("Collected book DTOS from DB: {}", bookDtos);
-        return UserBookGetResponse.builder()
-                .userModel(userDto)
-                .bookModels(bookDtos)
+        List<BookResponse> bookResponses = bookService.getBooksByUserId(userId)
+                .stream()
+                .map(bookMapper::bookDtoToBookRequest)
+                .toList();
+        log.info("Collected book responses: {}", bookResponses);
+        return UserBookResponse.builder()
+                .userResponse(userMapper.userDtoToUserRequest(userDto))
+                .bookResponses(bookResponses)
                 .build();
     }
 
-    public UserBookDeleteResponse deleteUserWithBooks(Long userId) {
+    public UserBookResponse deleteUserWithBooks(Long userId) {
+        log.error("Incorrect user id {}", userId);
+        if (userId == 0) throw new IncorrectUserIdException(userId);
         log.info("Got user id that need to be deleted with books: {}", userId);
         UserDto deletedUser = userService.deleteUserById(userId);
         log.info("Got user dto of deleted user: {}", deletedUser);
-        List<BookDto> deletedBooks = bookService.deleteBookById(userId);
-        log.info("Got deleted books of deleted user: {}", deletedBooks);
-        return UserBookDeleteResponse.builder()
-                .userModel(deletedUser)
-                .bookModels(deletedBooks)
+        List<BookResponse> deletedBooks = bookService.deleteBookById(userId)
+                .stream()
+                .map(bookMapper::bookDtoToBookRequest)
+                .toList();
+        log.info("Got deleted book responses of deleted user: {}", deletedBooks);
+        return UserBookResponse.builder()
+                .userResponse(userMapper.userDtoToUserRequest(deletedUser))
+                .bookResponses(deletedBooks)
                 .build();
     }
 }

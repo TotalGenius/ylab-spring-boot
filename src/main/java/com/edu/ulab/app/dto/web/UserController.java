@@ -2,9 +2,6 @@ package com.edu.ulab.app.dto.web;
 
 import com.edu.ulab.app.dto.web.constant.WebConstant;
 import com.edu.ulab.app.dto.web.request.UserBookRequest;
-import com.edu.ulab.app.dto.web.response.UserBookDeleteResponse;
-import com.edu.ulab.app.dto.web.response.UserBookGetResponse;
-import com.edu.ulab.app.dto.web.response.UserUpdateResponse;
 import com.edu.ulab.app.facade.UserDataFacade;
 import com.edu.ulab.app.dto.web.response.UserBookResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -36,6 +33,7 @@ public class UserController {
                                     schema = @Schema(implementation = UserBookResponse.class)))})
     public UserBookResponse createUserWithBooks(@RequestBody UserBookRequest request,
                                                 @RequestHeader(WebConstant.RQID) @Pattern(regexp = WebConstant.REQUEST_ID_PATTERN) final String requestId) {
+
         UserBookResponse response = userDataFacade.createUserWithBooks(request);
         log.info("Response with created user and his books: {}", response);
         return response;
@@ -46,9 +44,9 @@ public class UserController {
             responses = {
                     @ApiResponse(description = "User book",
                             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(implementation = UserUpdateResponse.class)))})
-    public UserUpdateResponse updateUserWithBooks(@RequestBody UserBookRequest request) {
-        UserUpdateResponse response = userDataFacade.updateUserWithBooks(request);
+                                    schema = @Schema(implementation = UserBookResponse.class)))})
+    public UserBookResponse updateUserWithBooks(@RequestBody UserBookRequest request) {
+        UserBookResponse response = userDataFacade.updateUserWithBooks(request);
         log.info("Response with updated user and his books: {}", response);
         return response;
     }
@@ -58,9 +56,9 @@ public class UserController {
             responses = {
                     @ApiResponse(description = "User book",
                             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(implementation = UserBookGetResponse.class)))})
-    public UserBookGetResponse getUserWithBooks(@PathVariable Long userId) {
-        UserBookGetResponse response = userDataFacade.getUserWithBooks(userId);
+                                    schema = @Schema(implementation = UserBookResponse.class)))})
+    public UserBookResponse getUserWithBooks(@PathVariable Long userId) {
+        UserBookResponse response = userDataFacade.getUserWithBooks(userId);
         log.info("Response with user and his books: {}", response);
         return response;
     }
@@ -70,10 +68,10 @@ public class UserController {
             responses = {
                     @ApiResponse(description = "User book",
                             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(implementation = UserBookDeleteResponse.class)))})
-    public UserBookDeleteResponse deleteUserWithBooks(@PathVariable Long userId) {
+                                    schema = @Schema(implementation = UserBookResponse.class)))})
+    public UserBookResponse deleteUserWithBooks(@PathVariable Long userId) {
         log.info("Delete user and his books:  userId {}", userId);
-        UserBookDeleteResponse response = userDataFacade.deleteUserWithBooks(userId);
+        UserBookResponse response = userDataFacade.deleteUserWithBooks(userId);
         return response;
     }
 }

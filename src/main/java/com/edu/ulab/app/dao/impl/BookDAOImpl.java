@@ -16,7 +16,7 @@ public class BookDAOImpl implements BookDAO {
     @Override
     public Book create(Book book) {
         Book createdBook = storage.getBookTable().create(book);
-        return book;
+        return createdBook;
     }
 
     @Override
@@ -49,6 +49,6 @@ public class BookDAOImpl implements BookDAO {
     @Override
     public Book update(Book book) {
         Optional<Book> optionalBook= storage.getBookTable().update(book);
-        return optionalBook.orElse(new Book(0l,0L,"","",0));
+        return optionalBook.get();
     }
 }
