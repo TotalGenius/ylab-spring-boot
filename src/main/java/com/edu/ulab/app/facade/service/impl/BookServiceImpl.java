@@ -4,6 +4,8 @@ import com.edu.ulab.app.dao.BookDAO;
 import com.edu.ulab.app.dao.impl.BookDAOImpl;
 import com.edu.ulab.app.dto.BookDto;
 import com.edu.ulab.app.entity.Book;
+import com.edu.ulab.app.mapper.BookMapper;
+import com.edu.ulab.app.mapper.BookMapperImpl;
 import com.edu.ulab.app.service.BookService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -13,37 +15,38 @@ import java.util.List;
 @Slf4j
 @Service
 public class BookServiceImpl implements BookService {
-    BookDAO bookDAO = new BookDAOImpl();
+    private final BookDAO bookDAO = new BookDAOImpl();
+    private final BookMapper bookMapper = new BookMapperImpl();
+
 
     @Override
     public BookDto createBook(BookDto bookDto) {
-        Book book = new Book(0L, bookDto.getUserId(), bookDto.getTitle(), bookDto.getAuthor(), bookDto.getPageCount());
-        book = bookDAO.create(book);
-        bookDto.setId(book.getId());
-        return bookDto;
+        Book createdBook = bookDAO.create(bookMapper.bookDtoToBook(bookDto));
+        log.info("Got created book from storage{}", createdBook);
+        return bookMapper.bookToBookDto(createdBook);
     }
 
     @Override
     public BookDto updateBook(BookDto bookDto) {
-
-        Book book = bookDAO.update(new Book(bookDto.getId(),bookDto.getUserId(),bookDto.getTitle(),bookDto.getAuthor(),bookDto.getPageCount()));
-        return new BookDto(book.getId(),bookDto.getUserId(),bookDto.getTitle(),bookDto.getAuthor(),bookDto.getPageCount());
+        Book updatedBook = bookDAO.update(bookMapper.bookDtoToBook(bookDto));
+        log.info("Got created book from storage{}", updatedBook);
+        return bookMapper.bookToBookDto(updatedBook);
     }
 
     @Override
     public List<BookDto> getBooksByUserId(Long userId) {
         List<Book> books = bookDAO.getBooksByUserId(userId);
-        List<BookDto> booksDto = books
+        log.info("Got books from storage by userID{}", books);
+        return books
                 .stream()
-                .map(x -> new BookDto(x.getId(), x.getUserId(), x.getTitle(), x.getAuthor(), x.getPageCount()))
+                .map(bookMapper::bookToBookDto)
                 .toList();
-        return booksDto;
     }
 
     @Override
     public List<BookDto> deleteBookById(Long id) {
         return bookDAO.deleteByUserId(id).stream()
-                .map(x -> new BookDto(x.getId(), x.getUserId(), x.getTitle(), x.getAuthor(), x.getPageCount()))
+                .map(bookMapper::bookToBookDto)
                 .toList();
     }
 }
