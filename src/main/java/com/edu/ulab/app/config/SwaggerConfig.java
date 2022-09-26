@@ -1,6 +1,6 @@
 package com.edu.ulab.app.config;
 
-import com.edu.ulab.app.web.constant.SwaggerInfo;
+import com.edu.ulab.app.dto.web.constant.SwaggerInfo;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import org.springframework.beans.factory.annotation.Value;

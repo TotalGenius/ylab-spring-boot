@@ -1,13 +1,13 @@
-package com.edu.ulab.app.dto;
+package com.edu.ulab.app.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class BookDto {
+@AllArgsConstructor
+public class Book {
     private Long id;
     private Long userId;
     private String title;
